@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Intrepid Check In</string>
+    <string name="near_intrepid">You\'re near Intrepid!</string>
+    <string name="check_in">Intrepid Check In</string>
 </resources>

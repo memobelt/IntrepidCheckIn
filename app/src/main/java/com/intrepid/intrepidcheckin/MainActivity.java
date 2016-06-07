@@ -19,6 +19,6 @@ public class MainActivity extends AppCompatActivity {
         PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
-                15 * 60 * 1000, pi);
+                 5 * 1000, pi);
     }
 }
