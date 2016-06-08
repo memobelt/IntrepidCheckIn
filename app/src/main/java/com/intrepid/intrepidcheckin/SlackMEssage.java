@@ -1,7 +1,10 @@
 package com.intrepid.intrepidcheckin;
 
+import android.app.AlarmManager;
 import android.app.DownloadManager;
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.util.Log;
@@ -43,36 +46,58 @@ public class SlackMessage extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (intent != null) {
-            JSONObject message = new JSONObject();
-            try {
-                String name = intent.getStringExtra(Constants.NAME);
-                if (name != null) {
-                    message.put("username", name);
-                }
-                message.put("text", "I'm nearby!");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            int i = intent.getIntExtra(Constants.FLAG, -1);
 
-            URL url = null;
-            try {
-                url = new URL(URL);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+        NotificationManager notifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notifyMgr.cancelAll();
+
+        Log.d("SM", String.valueOf(i));
+        if(i == LocationService.POST){
+            postCheckIn(intent);
+        }else if(i==LocationService.STOP){
+
+            Intent locationIntent = new Intent(this, LocationService.class);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            PendingIntent locationPendingIntent = PendingIntent.getService(this, 0, locationIntent, 0);
+            alarmManager.cancel(locationPendingIntent);
+            PendingIntent service = PendingIntent.getService(this, 0, locationIntent, PendingIntent.FLAG_NO_CREATE);
+            if(service!=null) {
+                stopService(locationIntent);
+                service.cancel();
             }
-            MediaType json = MediaType.parse("application/json; charset=utf-8");
-            OkHttpClient client = new OkHttpClient();
-            RequestBody body = RequestBody.create(json, String.valueOf(message));
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .build();
-            try {
-                client.newCall(request).execute();
-            } catch (IOException e) {
-                e.printStackTrace();
+        }
+    }
+
+    public void postCheckIn(Intent intent) {
+        JSONObject message = new JSONObject();
+        try {
+            String name = intent.getStringExtra(Constants.NAME);
+            if (name != null) {
+                message.put("username", name);
             }
+            message.put("text", "I'm nearby!");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        URL url = null;
+        try {
+            url = new URL(URL);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        MediaType json = MediaType.parse("application/json; charset=utf-8");
+        OkHttpClient client = new OkHttpClient();
+        RequestBody body = RequestBody.create(json, String.valueOf(message));
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        try {
+            client.newCall(request).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

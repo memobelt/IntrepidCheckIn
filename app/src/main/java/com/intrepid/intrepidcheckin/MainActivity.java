@@ -14,7 +14,7 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int FIFTEEN_MINUTES = 15 * 1000;
+    public static final int FIFTEEN_MINUTES = 15 * 60 * 1000;
     private Calendar cal;
     private Intent locationIntent;
     private PendingIntent locationPendingIntent;
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public void stopTracking(View v) {
         alarmManager.cancel(locationPendingIntent);
         PendingIntent service = PendingIntent.getService(this, 0, locationIntent, PendingIntent.FLAG_NO_CREATE);
-        if(service!=null){
+        if (service != null) {
             stopService(locationIntent);
             service.cancel();
         }
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (PendingIntent.getService(this, 0, locationIntent, PendingIntent.FLAG_NO_CREATE)!= null) {
+        if (PendingIntent.getService(this, 0, locationIntent, PendingIntent.FLAG_NO_CREATE) != null) {
             setStopButton();
         } else {
             setStartButton();
