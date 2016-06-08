@@ -22,6 +22,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         GoogleApiClient.OnConnectionFailedListener {
     private GoogleApiClient mGoogleApiClient;
     private Location workLocation;
+    public static final int POST = 0;
+    public static final int CANCEL = 1;
+    public static final int STOP = 2;
 
     public LocationService() {
     }
@@ -58,13 +61,10 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
             if(location != null){
-                if(location.distanceTo(workLocation)<=50){
+                if(location.distanceTo(workLocation)<=1000){
 
                     Intent slackIntent = new Intent(getApplicationContext(), SlackMessage.class);
                     slackIntent.putExtra(Constants.NAME, name);
-                    PendingIntent slackPendingIntent =
-                            PendingIntent.getService(getApplicationContext(), 1, slackIntent,
-                                    PendingIntent.FLAG_UPDATE_CURRENT);
 
                     android.support.v4.app.NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(this)
@@ -72,12 +72,30 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                                     .setContentTitle(getString(R.string.app_name))
                                     .setContentText(getString(R.string.near_intrepid))
                                     .setAutoCancel(true);
-                    mBuilder.setContentIntent(slackPendingIntent);
+
+                    slackIntent.putExtra(Constants.FLAG, POST);
+                    PendingIntent slackPendingIntent =
+                            PendingIntent.getService(getApplicationContext(), POST, slackIntent,
+                                    PendingIntent.FLAG_UPDATE_CURRENT);
+                    mBuilder.addAction(R.drawable.post,getString(R.string.post), slackPendingIntent);
+
+                    slackIntent.putExtra(Constants.FLAG, CANCEL);
+                    slackPendingIntent =
+                            PendingIntent.getService(getApplicationContext(), CANCEL, slackIntent,
+                                    PendingIntent.FLAG_UPDATE_CURRENT);
+                    mBuilder.addAction(R.drawable.cancel,getString(R.string.cancel), slackPendingIntent);
+
+                    slackIntent.putExtra(Constants.FLAG, STOP);
+                    slackPendingIntent =
+                            PendingIntent.getService(getApplicationContext(), STOP, slackIntent,
+                                    PendingIntent.FLAG_UPDATE_CURRENT);
+                    mBuilder.addAction(R.drawable.stop,getString(R.string.stop), slackPendingIntent);
 
                     int mNotificationId = 001;
                     NotificationManager mNotifyMgr =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     mNotifyMgr.notify(mNotificationId, mBuilder.build());
+
                 }
             }
         }

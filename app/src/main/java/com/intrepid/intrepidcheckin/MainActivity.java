@@ -14,7 +14,7 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int FIFTEEN_MINUTES = 60 * 1000;
+    public static final int FIFTEEN_MINUTES = 15 * 1000;
     private Calendar cal;
     private Intent locationIntent;
     private PendingIntent locationPendingIntent;
