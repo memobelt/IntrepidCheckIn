@@ -9,8 +9,35 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.intrepid.intrepidcheckin.MainActivity">
 
-    <TextView
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:id="@+id/etName"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:hint="@string/enter_name"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/etName"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Start"
+            android:id="@+id/btnStartTracking"
+            android:onClick="startTracking"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Stop"
+            android:id="@+id/btnStopTracking"
+            android:onClick="stopTracking"/>
+
+    </LinearLayout>
+
+
 </RelativeLayout>

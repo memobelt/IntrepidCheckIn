@@ -1,6 +1,7 @@
 package com.intrepid.intrepidcheckin;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,7 +20,6 @@ import com.google.android.gms.location.LocationServices;
 
 public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
-    public static final String TAG = "LOCATIONSERVICE";
     private GoogleApiClient mGoogleApiClient;
     private Location workLocation;
 
@@ -28,14 +28,12 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(mGoogleApiClient==null){
-            Log.d(TAG,"OSC");
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
@@ -43,54 +41,70 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                     .build();
             mGoogleApiClient.connect();
             workLocation = new Location("Work");
-            workLocation.setLatitude(42.367053);
-            workLocation.setLongitude(-71.080161);
+            workLocation.setLatitude(42.367053); //Intrepid Lat
+            workLocation.setLongitude(-71.080161); //Intrepid Long
         }
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            Log.d("T", "permission failed");
-            return 0;
-        }
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if(location != null){
-            if(location.distanceTo(workLocation)<=50){
-                android.support.v4.app.NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(this)
-                                .setSmallIcon(R.mipmap.ic_launcher)
-                                .setContentTitle(getString(R.string.app_name))
-                                .setContentText(getString(R.string.near_intrepid));
-                int mNotificationId = 001;
-                NotificationManager mNotifyMgr =
-                        (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        checkLocation(intent.getStringExtra(Constants.NAME));
+        return super.onStartCommand(intent, flags, startId);
+    }
 
+    public void checkLocation(String name){
+        //Permission check
+        if (!(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED)) {
+
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+            if(location != null){
+                if(location.distanceTo(workLocation)<=50){
+
+                    Intent slackIntent = new Intent(getApplicationContext(), SlackMessage.class);
+                    slackIntent.putExtra(Constants.NAME, name);
+                    PendingIntent slackPendingIntent =
+                            PendingIntent.getService(getApplicationContext(), 1, slackIntent,
+                                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    android.support.v4.app.NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(this)
+                                    .setSmallIcon(R.mipmap.ic_launcher)
+                                    .setContentTitle(getString(R.string.app_name))
+                                    .setContentText(getString(R.string.near_intrepid))
+                                    .setAutoCancel(true);
+                    mBuilder.setContentIntent(slackPendingIntent);
+
+                    int mNotificationId = 001;
+                    NotificationManager mNotifyMgr =
+                            (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                }
             }
         }
-        else {
-            Log.d("T", "location nulll");
-        }
-        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d(TAG, "onConnected");
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.d(TAG,"onConnectionSuspended");
-
+        if(mGoogleApiClient != null) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(mGoogleApiClient != null) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
 }

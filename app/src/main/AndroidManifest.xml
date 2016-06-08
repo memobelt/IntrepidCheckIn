@@ -22,7 +22,11 @@
         <service
             android:name=".LocationService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" />
+
+        <service
+            android:name=".SlackMessage"
+            android:exported="false"></service>
     </application>
 
 </manifest>
