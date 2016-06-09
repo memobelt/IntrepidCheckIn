@@ -60,7 +60,8 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
             if (location != null) {
-                if (location.distanceTo(workLocation) <= 1000) {
+                //<= 50 meters from intrepid
+                if (location.distanceTo(workLocation) <= 50) {
 
                     Intent slackIntent = new Intent(getApplicationContext(), SlackMessage.class);
                     slackIntent.putExtra(Constants.NAME, name);
@@ -90,10 +91,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                                     PendingIntent.FLAG_UPDATE_CURRENT);
                     builder.addAction(R.drawable.stop, getString(R.string.stop), slackPendingIntent);
 
-                    int notificationId = 001;
                     NotificationManager notifyMgr =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    notifyMgr.notify(notificationId, builder.build());
+                    notifyMgr.notify(1, builder.build());
 
                 }
             }
