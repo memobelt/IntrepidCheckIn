@@ -24,6 +24,10 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     public static final int POST = 0;
     public static final int CANCEL = 1;
     public static final int STOP = 2;
+    public static final double INTREPID_LAT = 42.367053;
+    public static final double INTREPID_LONG = -71.080161;
+    public static final int MIN_DISTANCE_FROM_INTREPID = 50;
+    public static final int NOTIFICATION_ID = 1;
 
     public LocationService() {
     }
@@ -43,8 +47,8 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                     .build();
             googleApiClient.connect();
             workLocation = new Location("Work");
-            workLocation.setLatitude(42.367053); //Intrepid Lat
-            workLocation.setLongitude(-71.080161); //Intrepid Long
+            workLocation.setLatitude(INTREPID_LAT); //Intrepid Lat
+            workLocation.setLongitude(INTREPID_LONG); //Intrepid Long
         }
         checkLocation(intent.getStringExtra(Constants.NAME));
         return super.onStartCommand(intent, flags, startId);
@@ -61,7 +65,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
             if (location != null) {
                 //<= 50 meters from intrepid
-                if (location.distanceTo(workLocation) <= 50) {
+                if (location.distanceTo(workLocation) <= MIN_DISTANCE_FROM_INTREPID) {
 
                     Intent slackIntent = new Intent(getApplicationContext(), SlackMessageService.class);
                     slackIntent.putExtra(Constants.NAME, name);
@@ -73,34 +77,33 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                                     .setContentText(getString(R.string.near_intrepid))
                                     .setAutoCancel(true);
 
-                    setIntentFlags(slackIntent, builder);
+                    setIntentFlags(slackIntent, builder, POST);
+                    setIntentFlags(slackIntent, builder, CANCEL);
+                    setIntentFlags(slackIntent, builder, STOP);
 
                     NotificationManager notifyMgr =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    notifyMgr.notify(1, builder.build());
+                    notifyMgr.notify(NOTIFICATION_ID, builder.build());
                 }
             }
         }
     }
 
-    public void setIntentFlags(Intent slackIntent, NotificationCompat.Builder builder) {
-        //where i corresponds to static ints POST, CANCEL, STOP
-        for (int i = 0; i < 3; i++) {
-            slackIntent.putExtra(Constants.FLAG, i);
-            PendingIntent slackPendingIntent =
-                    PendingIntent.getService(getApplicationContext(), i, slackIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
-            switch (i) {
-                case POST:
-                    builder.addAction(R.drawable.post, getString(R.string.post), slackPendingIntent);
-                    break;
-                case CANCEL:
-                    builder.addAction(R.drawable.cancel, getString(R.string.cancel), slackPendingIntent);
-                    break;
-                case STOP:
-                    builder.addAction(R.drawable.stop, getString(R.string.stop), slackPendingIntent);
-                    break;
-            }
+    public void setIntentFlags(Intent slackIntent, NotificationCompat.Builder builder, int flag) {
+        slackIntent.putExtra(Constants.FLAG, flag);
+        PendingIntent slackPendingIntent =
+                PendingIntent.getService(getApplicationContext(), flag, slackIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+        switch (flag) {
+            case POST:
+                builder.addAction(R.drawable.post, getString(R.string.post), slackPendingIntent);
+                break;
+            case CANCEL:
+                builder.addAction(R.drawable.cancel, getString(R.string.cancel), slackPendingIntent);
+                break;
+            case STOP:
+                builder.addAction(R.drawable.stop, getString(R.string.stop), slackPendingIntent);
+                break;
         }
     }
 

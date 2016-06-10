@@ -21,7 +21,7 @@ import butterknife.OnClick;
 
 public class TrackingActivity extends AppCompatActivity {
 
-    public static final int FIFTEEN_MINUTES = 15 * 1000;
+    public static final int FIFTEEN_MINUTES = 15 * 60 * 1000;
     private Calendar cal;
     private AlarmManager alarmManager;
     private Intent locationIntent;
