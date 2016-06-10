@@ -19,8 +19,6 @@ import com.google.android.gms.location.LocationServices;
 
 public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
-    private GoogleApiClient googleApiClient;
-    private Location workLocation;
     public static final int POST = 0;
     public static final int CANCEL = 1;
     public static final int STOP = 2;
@@ -28,6 +26,8 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     public static final double INTREPID_LONG = -71.080161;
     public static final int MIN_DISTANCE_FROM_INTREPID = 50;
     public static final int NOTIFICATION_ID = 1;
+    private Location workLocation;
+    private GoogleApiClient googleApiClient;
 
     public LocationService() {
     }
