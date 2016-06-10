@@ -47,7 +47,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/Start"
+            android:text="@string/start_tracking"
             />
 
         <Button
@@ -55,7 +55,7 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/Stop"
+            android:text="@string/stop_tracking"
             />
 
     </LinearLayout>

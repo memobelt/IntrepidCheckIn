@@ -73,7 +73,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                                     .setContentText(getString(R.string.near_intrepid))
                                     .setAutoCancel(true);
 
-                    setFlags(slackIntent, builder);
+                    setIntentFlags(slackIntent, builder);
 
                     NotificationManager notifyMgr =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -83,7 +83,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         }
     }
 
-    public void setFlags(Intent slackIntent, NotificationCompat.Builder builder) {
+    public void setIntentFlags(Intent slackIntent, NotificationCompat.Builder builder) {
         //where i corresponds to static ints POST, CANCEL, STOP
         for (int i = 0; i < 3; i++) {
             slackIntent.putExtra(Constants.FLAG, i);
