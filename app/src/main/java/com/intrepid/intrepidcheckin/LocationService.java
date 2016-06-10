@@ -11,7 +11,7 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -63,39 +63,43 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                 //<= 50 meters from intrepid
                 if (location.distanceTo(workLocation) <= 50) {
 
-                    Intent slackIntent = new Intent(getApplicationContext(), SlackMessage.class);
+                    Intent slackIntent = new Intent(getApplicationContext(), SlackMessageService.class);
                     slackIntent.putExtra(Constants.NAME, name);
 
-                    android.support.v4.app.NotificationCompat.Builder builder =
+                    NotificationCompat.Builder builder =
                             new NotificationCompat.Builder(this)
                                     .setSmallIcon(R.mipmap.ic_launcher)
                                     .setContentTitle(getString(R.string.app_name))
                                     .setContentText(getString(R.string.near_intrepid))
                                     .setAutoCancel(true);
 
-                    slackIntent.putExtra(Constants.FLAG, POST);
-                    PendingIntent slackPendingIntent =
-                            PendingIntent.getService(getApplicationContext(), POST, slackIntent,
-                                    PendingIntent.FLAG_UPDATE_CURRENT);
-                    builder.addAction(R.drawable.post, getString(R.string.post), slackPendingIntent);
-
-                    slackIntent.putExtra(Constants.FLAG, CANCEL);
-                    slackPendingIntent =
-                            PendingIntent.getService(getApplicationContext(), CANCEL, slackIntent,
-                                    PendingIntent.FLAG_UPDATE_CURRENT);
-                    builder.addAction(R.drawable.cancel, getString(R.string.cancel), slackPendingIntent);
-
-                    slackIntent.putExtra(Constants.FLAG, STOP);
-                    slackPendingIntent =
-                            PendingIntent.getService(getApplicationContext(), STOP, slackIntent,
-                                    PendingIntent.FLAG_UPDATE_CURRENT);
-                    builder.addAction(R.drawable.stop, getString(R.string.stop), slackPendingIntent);
+                    setFlags(slackIntent, builder);
 
                     NotificationManager notifyMgr =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     notifyMgr.notify(1, builder.build());
-
                 }
+            }
+        }
+    }
+
+    public void setFlags(Intent slackIntent, NotificationCompat.Builder builder) {
+        //where i corresponds to static ints POST, CANCEL, STOP
+        for (int i = 0; i < 3; i++) {
+            slackIntent.putExtra(Constants.FLAG, i);
+            PendingIntent slackPendingIntent =
+                    PendingIntent.getService(getApplicationContext(), i, slackIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+            switch (i) {
+                case POST:
+                    builder.addAction(R.drawable.post, getString(R.string.post), slackPendingIntent);
+                    break;
+                case CANCEL:
+                    builder.addAction(R.drawable.cancel, getString(R.string.cancel), slackPendingIntent);
+                    break;
+                case STOP:
+                    builder.addAction(R.drawable.stop, getString(R.string.stop), slackPendingIntent);
+                    break;
             }
         }
     }
@@ -123,5 +127,4 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             googleApiClient.disconnect();
         }
     }
-
 }

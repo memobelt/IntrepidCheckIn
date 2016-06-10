@@ -8,4 +8,5 @@
     <string name="post">Post</string>
     <string name="cancel">Cancel</string>
     <string name="stop">Stop</string>
+    <string name="you_must_stop_and_start_tracking_to_update_name">You must stop and start tracking to update name</string>
 </resources>
